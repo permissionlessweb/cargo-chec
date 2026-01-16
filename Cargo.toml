@@ -1,13 +1,13 @@
 [package]
 name = "cargo-chec"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "A cargo subcommand to run cargo check and output filtered error messages as a JSON array"
 authors = ["hardnett <loaf0bred@proton.me>"]
 license = "MIT OR Apache-2.0"
 keywords = ["cargo", "subcommand", "rust", "errors", "check"]
 categories = ["development-tools", "command-line-utilities"]
-repository = "https://github.com/youruser/cargo-chec"
+repository = "https://github.com/permissionlessweb/cargo-chec"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
