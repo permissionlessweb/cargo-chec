@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Justfile for cargo-chec release tasks
 
 # Run tests
