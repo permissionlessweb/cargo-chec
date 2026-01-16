@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+echo "Checking code formatting..."
+cargo fmt --check
