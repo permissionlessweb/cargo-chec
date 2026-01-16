@@ -13,11 +13,16 @@ enum Cargo {
 #[command(version, about = "Run cargo check and output filtered errors/warnings as JSON")]
 #[command(long_about = "Runs `cargo check --message-format=json` and transforms the output into a \
     simplified JSON array of error strings. Useful for CI/CD pipelines, editors, and AI tools.\n\n\
-    By default, runs cargo check in the current directory. Use --input to parse existing output.")]
+    All cargo check flags are supported and passed through (e.g. --release, --package, --all-targets).\n\n\
+    Use --input to parse existing cargo check output instead of running cargo check.")]
 struct Args {
-    /// Input source: file path, "-" for stdin, or omit to run cargo check
+    /// Parse from file or stdin ("-") instead of running cargo check
     #[arg(short, long, value_name = "FILE")]
     input: Option<String>,
+
+    /// Arguments passed through to cargo check (e.g. --release, -p foo)
+    #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+    cargo_args: Vec<String>,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -27,7 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(p) if p == "-" => { let mut s = String::new(); io::stdin().read_to_string(&mut s)?; s }
         Some(p) => fs::read_to_string(p)?,
         None => String::from_utf8(std::process::Command::new("cargo")
-            .args(["check", "--message-format=json"]).output()?.stdout)?,
+            .arg("check").arg("--message-format=json").args(&args.cargo_args).output()?.stdout)?,
     };
 
     let results: Vec<String> = json_str.lines()
