@@ -1,9 +1,9 @@
 [package]
 name = "cargo-chec"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "A cargo subcommand to run cargo check and output filtered error messages as a JSON array"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["hardnett <loaf0bred@proton.me>"]
 license = "MIT OR Apache-2.0"
 keywords = ["cargo", "subcommand", "rust", "errors", "check"]
 categories = ["development-tools", "command-line-utilities"]

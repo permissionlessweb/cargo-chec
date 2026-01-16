@@ -3,14 +3,25 @@ use serde_json::{json, Value};
 use std::{fs, io::{self, Read}};
 
 #[derive(Parser)]
-#[command(name = "cargo-chec", about = "Cargo subcommand to check and filter Rust errors")]
+#[command(name = "cargo", bin_name = "cargo")]
+enum Cargo {
+    #[command(name = "chec")]
+    Chec(Args),
+}
+
+#[derive(clap::Args)]
+#[command(version, about = "Run cargo check and output filtered errors/warnings as JSON")]
+#[command(long_about = "Runs `cargo check --message-format=json` and transforms the output into a \
+    simplified JSON array of error strings. Useful for CI/CD pipelines, editors, and AI tools.\n\n\
+    By default, runs cargo check in the current directory. Use --input to parse existing output.")]
 struct Args {
-    #[arg(short, long)]
+    /// Input source: file path, "-" for stdin, or omit to run cargo check
+    #[arg(short, long, value_name = "FILE")]
     input: Option<String>,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = Args::parse();
+    let Cargo::Chec(args) = Cargo::parse();
 
     let json_str = match &args.input {
         Some(p) if p == "-" => { let mut s = String::new(); io::stdin().read_to_string(&mut s)?; s }
