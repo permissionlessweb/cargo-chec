@@ -7,7 +7,7 @@ authors = ["Your Name <your.email@example.com>"]
 license = "MIT OR Apache-2.0"
 keywords = ["cargo", "subcommand", "rust", "errors", "check"]
 categories = ["development-tools", "command-line-utilities"]
-repository = "https://github.com/youruser/cargo-checkmate"
+repository = "https://github.com/youruser/cargo-chec"
 
 [dependencies]
 cw-jsonfilter = { git = "https://github.com/DA0-DA0/dao-contracts.git", package = "cw-jsonfilter", branch = "development" }

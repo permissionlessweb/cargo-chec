@@ -28,23 +28,27 @@ Requires Rust and Cargo.
 ## Usage
 
 ### Default: Run and Check
+
 ```bash
 cd your-rust-project
-cargo checkmate
+cargo chec
 # Output: ["Error (severity 8) from rustc in src/main.rs at line 1:1-1:10: Message"]
 ```
 
 ### Custom Input
+
 ```bash
 # From file
-cargo checkmate --input logs.json
+cargo chec --input logs.json
 
 # From stdin
-cat logs.json | cargo checkmate --input -
+cat logs.json | cargo chec --input -
 ```
 
 ### Output Format
+
 JSON array of strings:
+
 ```json
 [
   "Error (severity 8) from rustc in src/main.rs at line 1:1-1:10: Error message",
@@ -57,6 +61,7 @@ Empty on no issues: `[]`.
 ## Example
 
 In a project with errors:
+
 ```bash
 $ cargo chec
 ["Error (severity 8) from rustc in src/main.rs at line 1:1-1:10: Example error"]
@@ -96,6 +101,7 @@ Requires `just` (install via `cargo install just`).
 This section provides structured details for AI tools to understand and interact with the codebase.
 
 ### Project Structure
+
 - **Root Directory**: `cargo-chec/` (rename from cargo-chec)
 - **Source Code**: `src/main.rs` (single-file binary)
 - **Configuration**: `Cargo.toml` (dependencies and metadata)
@@ -105,11 +111,13 @@ This section provides structured details for AI tools to understand and interact
 - **Documentation**: `README.md` (this file)
 
 ### Key Dependencies
+
 - `cw-jsonfilter` (GitHub: DA0-DA0/dao-contracts): Filtering for severity.
 - `serde` & `serde_json`: JSON parsing/serialization.
 - `clap`: CLI args.
 
 ### Build Commands
+
 - **Local**: `cargo build --release` → `target/release/cargo-chec`
 - **Lint**: `cargo clippy`
 - **Format**: `cargo fmt`
@@ -118,6 +126,7 @@ This section provides structured details for AI tools to understand and interact
 - **Release Scripts**: Use `just` with Justfile (e.g., `just check`, `just release`)
 
 ### Runtime Behavior
+
 - **Entry Point**: `main()` in `src/main.rs`
 - **Input**: If no `--input`, runs `cargo check --message-format=json`.
 - **Filtering**: `CwJsonFilter` for severity >=4.
@@ -125,6 +134,7 @@ This section provides structured details for AI tools to understand and interact
 - **Error Handling**: JSON array or stderr messages.
 
 ### Code Style
+
 - Idiomatic Rust with `?` and structs.
 - No comments.
 - Edition 2021, rustfmt-compliant.
