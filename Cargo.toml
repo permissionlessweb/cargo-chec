@@ -1,6 +1,6 @@
 [package]
 name = "cargo-chec"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "A cargo subcommand to run cargo check and output filtered error messages as a JSON array"
 authors = ["hardnett <loaf0bred@proton.me>"]
