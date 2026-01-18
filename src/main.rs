@@ -57,10 +57,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter_map(|l| serde_json::from_str::<Value>(l).ok())
         .filter_map(|log| {
             let msg = log.get("message").filter(|_| log["reason"] == "compiler-message")?;
-            let severity = match msg["level"].as_str()? { 
-                "error" => 5, 
-                "warning" if args.include_warnings => 4, 
-                _ => return None 
+            let (severity, label) = match msg["level"].as_str()? {
+                "error" => (5, "Error"),
+                "warning" if args.include_warnings => (4, "Warning"),
+                _ => return None
             };
             let span = msg["spans"].as_array()?.first()?;
             let resource = span["file_name"].as_str()?;
@@ -74,8 +74,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "endLineNumber": sp["line_end"], "endColumn": sp["column_end"]}))
             }).collect();
 
-            let mut out = format!("Error (severity {}) from rustc in {} at line {}:{}-{}: {}",
-                severity, resource, sl, sc, ec, message);
+            let mut out = format!("{} (severity {}) from rustc in {} at line {}:{}-{}: {}",
+                label, severity, resource, sl, sc, ec, message);
             for r in &related {
                 out.push_str(&format!(" Related: In {} at line {}:{}-{}: {}",
                     r["resource"].as_str().unwrap_or(""), r["startLineNumber"], r["startColumn"],
