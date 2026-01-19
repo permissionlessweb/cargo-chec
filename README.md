@@ -91,6 +91,42 @@ Empty on no issues: `[]`.
 - **No output?** Project has no errors/warnings.
 - **Invalid JSON?** If using custom input, ensure valid NDJSON from cargo check.
 
+## Benchmarks
+
+```bash
+============================================
+Benchmark: cargo check vs cargo chec
+============================================
+
+Building cargo-chec...
+Build complete.
+
+Running cargo check --message-format=json...
+  Output: 80233 characters, 37 lines
+
+Running cargo chec (errors only)...
+  Output: 5130 characters, 1 lines
+
+Running cargo chec --include-warnings...
+  Output: 12397 characters, 1 lines
+
+============================================
+Results Summary
+============================================
+
+cargo check --message-format=json:
+  Characters: 80233
+  Lines: 37
+
+cargo chec (errors only):
+  Characters: 5130
+  Savings: 93.6%
+
+cargo chec --include-warnings:
+  Characters: 12397
+  Savings: 84.5%
+```
+
 ## Contributing
 
 Open issues/PRs on GitHub. Built for the Rust ecosystem.

@@ -1,0 +1,11 @@
+[package]
+name = "benchmark-test-crate"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+# Enable warnings to generate more diagnostic output
+[lints.rust]
+warnings = "warn"
