@@ -4,10 +4,9 @@
 
 ![](ferris.png)
 
-A cargo subcommand that wraps `cargo check`, filters Rust errors/warnings, and outputs them as a JSON array of strings. Perfect for CI/CD, scripts, or AI tools needing structured error data.
+A cargo subcommand that wraps `cargo check`, filters Rust errors/warnings, and outputs them as a JSON array of strings. Perfect minimizing character/token count during agentic LLM sessions.
 
 </center>
-
 
 ## Quick Start
 
