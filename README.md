@@ -8,6 +8,13 @@ A cargo subcommand that wraps `cargo check`, filters Rust errors/warnings, and o
 
 </center>
 
+> **Companion Tool**: Check out [Cargo Tes](tes/README.md) for test failure filtering!
+
+## Tools in This Repository
+
+- **[Cargo Chec](README.md)**: Filters `cargo check` errors/warnings
+- **[Cargo Tes](tes/README.md)**: Filters `cargo test` failures
+
 ## Quick Start
 
 1. **Install globally**: `cargo install cargo-chec`
