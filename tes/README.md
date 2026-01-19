@@ -93,35 +93,36 @@ Empty on no failures: `[]`.
 ## Benchmarks
 
 ```bash
-===========================================
+============================================
 Benchmark: cargo test (JSON) vs cargo tes
-===========================================
+============================================
 
 Building cargo-tes...
 Build complete.
 
 Running cargo test --message-format=json -- -Z unstable-options --format=json...
-  Time: 0m0.056s
-  Output: 5470 characters, 33 lines
+  Time: 0m0.289s
+  Output: 161502 characters, 73 lines
 
 Running cargo tes...
-  Time: 0m0.219s
-  Output: 2238 characters, 1 lines
+  Time: 0m0.326s
+  Output: 10515 characters, 1 lines
 
-===========================================
+============================================
 Results Summary
-===========================================
+============================================
 
 cargo test --message-format=json -- -Z unstable-options --format=json:
-  Time: 0m0.056s
-  Characters: 5470
-  Lines: 33
+  Time: 0m0.289s
+  Characters: 161502
+  Lines: 73
 
 cargo tes:
-  Time: 0m0.219s
-  Characters: 2238
+  Time: 0m0.326s
+  Characters: 10515
   Lines: 1
-  Character savings: 59.0%
+  Character savings: 93.4%
+
 ```
 
 ## Contributing
