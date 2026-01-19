@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "tes", "test"]
+
 [package]
 name = "cargo-chec"
 version = "0.1.5"
@@ -8,6 +11,7 @@ license = "MIT OR Apache-2.0"
 keywords = ["cargo", "subcommand", "rust", "errors", "check"]
 categories = ["development-tools", "command-line-utilities"]
 repository = "https://github.com/permissionlessweb/cargo-chec"
+exclude = ["tes/", "test"]
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }

@@ -10,6 +10,8 @@ use std::io::Read;
 use std::io::Write;
 use std::fmt::Debug;
 
+pub mod tests;
+
 // ============================================
 // WARNINGS: Unused variables (10 warnings)
 // ============================================

@@ -53,8 +53,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "benchmark-test-crate"
+version = "0.1.0"
+
+[[package]]
 name = "cargo-chec"
 version = "0.1.5"
+dependencies = [
+ "clap",
+ "serde_json",
+]
+
+[[package]]
+name = "cargo-tes"
+version = "0.1.0"
 dependencies = [
  "clap",
  "serde_json",

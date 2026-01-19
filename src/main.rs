@@ -1,6 +1,9 @@
 use clap::Parser;
 use serde_json::{json, Value};
-use std::{fs,io::{self, Read}};
+use std::{
+    fs,
+    io::{self, Read},
+};
 
 #[derive(Parser)]
 #[command(name = "cargo", bin_name = "cargo")]
@@ -10,7 +13,7 @@ enum Cargo {
 }
 
 #[derive(clap::Args)]
-#[command(version,about = "Filtered cargo check errors/warnings, as JSON")]
+#[command(version, about = "Filtered cargo check errors/warnings, as JSON")]
 #[command(
     long_about = "Runs `cargo check --message-format=json` and transforms the output into a \
     simplified JSON array of error strings. Useful for CI/CD pipelines, editors, and AI tools.\n\n\
