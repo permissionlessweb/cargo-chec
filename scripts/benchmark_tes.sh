@@ -143,7 +143,7 @@ easier parsing by editors, CI/CD pipelines, and AI tools.
 
 Key benefits:
 - Focused error-only output (ignores passing/ignored tests)
-- Space-minimized messages for reduced token usage
+- Space-minimized messages for reduced character count
 - Consistent JSON array format for programmatic consumption
 - Faster processing for large test suites with many failures
 EOF
