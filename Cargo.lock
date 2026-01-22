@@ -58,7 +58,7 @@ version = "0.1.0"
 
 [[package]]
 name = "cargo-chec"
-version = "0.1.7"
+version = "0.1.2"
 dependencies = [
  "clap",
  "serde_json",
