@@ -2,7 +2,9 @@ use clap::Parser;
 use serde_json::{json, Value};
 use std::{
     fs,
-    io::{self, Read},
+    io::{self, BufRead, BufReader, Read, Write},
+    process::{Command, Stdio},
+    thread,
 };
 
 #[derive(Parser)]
@@ -37,7 +39,7 @@ struct TestArgs {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let Cargo::Tes(args) = Cargo::parse();
 
-    let (json_str, failure_opt) = match &args.input {
+    let (json_str, failure_status) = match &args.input {
         Some(p) if p == "-" => {
             let mut s = String::new();
             io::stdin().read_to_string(&mut s)?;
@@ -45,7 +47,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Some(p) => (fs::read_to_string(p)?, None),
         None => {
-            let output = std::process::Command::new("cargo")
+            // Spawn cargo test with piped stdout and stderr
+            // Force color output even when piped
+            let mut child = Command::new("cargo")
                 .arg("test")
                 .arg("--message-format=json")
                 .args(&args.cargo_args)
@@ -53,10 +57,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .arg("-Z")
                 .arg("unstable-options")
                 .arg("--format=json")
-                .output()?;
-            let status = output.status;
-            let stderr = output.stderr;
-            (String::from_utf8(output.stdout)?, Some((status, stderr)))
+                .env("CARGO_TERM_COLOR", "always")
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()?;
+
+            // Take ownership of stderr for streaming in a separate thread
+            let stderr = child.stderr.take().expect("capture stderr");
+            let stderr_handle = thread::spawn(move || {
+                for line in BufReader::new(stderr).lines().map_while(Result::ok) {
+                    if !line.trim().starts_with("Running ") {
+                        let _ = writeln!(io::stderr(), "{}", line);
+                    }
+                }
+            });
+            let stdout: Vec<_> = BufReader::new(child.stdout.take().expect("capture stdout"))
+                .lines()
+                .map_while(Result::ok)
+                .collect();
+            let status = child.wait()?;
+            let _ = stderr_handle.join();
+            let json_str = stdout.join("\n");
+            (json_str, Some(status))
         }
     };
 
@@ -107,12 +129,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }).collect();
 
-    if let Some((status, stderr)) = failure_opt {
+    if let Some(status) = failure_status {
         if !status.success() {
             results.push(format!(
-                "Cargo test failed with exit code {}: {}",
-                status.code().unwrap_or(-1),
-                String::from_utf8_lossy(&stderr)
+                "Cargo test failed with exit code {}",
+                status.code().unwrap_or(-1)
             ));
         }
     }
