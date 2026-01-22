@@ -6,9 +6,9 @@
 // ============================================
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::fmt::Debug;
 use std::io::Read;
 use std::io::Write;
-use std::fmt::Debug;
 
 pub mod tests;
 
