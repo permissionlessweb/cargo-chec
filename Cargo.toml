@@ -11,7 +11,7 @@ license = "MIT OR Apache-2.0"
 keywords = ["cargo", "subcommand", "rust", "errors", "check"]
 categories = ["development-tools", "command-line-utilities"]
 repository = "https://github.com/permissionlessweb/cargo-chec"
-exclude = ["tes/", "test"]
+exclude = ["tes/", "test/", "scripts/", "benchmark_results/", ".vscode/", "target/", "Justfile", "*.log", ".cache/"]
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }

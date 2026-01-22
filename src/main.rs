@@ -2,7 +2,9 @@ use clap::Parser;
 use serde_json::{json, Value};
 use std::{
     fs,
-    io::{self, Read},
+    io::{self, BufRead, BufReader, Read, Write},
+    process::{Command, Stdio},
+    thread,
 };
 
 #[derive(Parser)]
@@ -37,7 +39,7 @@ struct Args {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let Cargo::Chec(args) = Cargo::parse();
 
-    let (json_str, failure_opt) = match &args.input {
+    let (json_str, failure_status) = match &args.input {
         Some(p) if p == "-" => {
             let mut s = String::new();
             io::stdin().read_to_string(&mut s)?;
@@ -45,14 +47,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Some(p) => (fs::read_to_string(p)?, None),
         None => {
-            let output = std::process::Command::new("cargo")
+            let mut child = Command::new("cargo")
                 .arg("check")
                 .arg("--message-format=json")
                 .args(&args.cargo_args)
-                .output()?;
-            let status = output.status;
-            let stderr = output.stderr;
-            (String::from_utf8(output.stdout)?, Some((status, stderr)))
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()?;
+
+            let stderr = child.stderr.take().expect("Failed to capture stderr");
+            let stderr_handle = thread::spawn(move || {
+                for line in BufReader::new(stderr).lines().map_while(Result::ok) {
+                    if line.contains("Blocking waiting for file lock") {
+                        let _ = writeln!(io::stderr(), "{}", line);
+                    }
+                }
+            });
+
+            let stdout_lines: Vec<_> =
+                BufReader::new(child.stdout.take().expect("Failed to capture stdout"))
+                    .lines()
+                    .map_while(Result::ok)
+                    .collect();
+
+            let status = child.wait()?;
+            let _ = stderr_handle.join();
+
+            let json_str = stdout_lines.join("\n");
+            (json_str, Some(status))
         }
     };
 
@@ -87,12 +109,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Some(out)
         }).collect();
 
-    if let Some((status, stderr)) = failure_opt {
+    if let Some(status) = failure_status {
         if !status.success() {
             results.push(format!(
-                "Cargo check failed with exit code {}: {}",
-                status.code().unwrap_or(-1),
-                String::from_utf8_lossy(&stderr)
+                "Cargo check failed with exit code {}",
+                status.code().unwrap_or(-1)
             ));
         }
     }

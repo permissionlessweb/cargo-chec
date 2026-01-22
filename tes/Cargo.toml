@@ -9,6 +9,8 @@ keywords = ["cargo", "subcommand", "rust", "errors", "test"]
 categories = ["development-tools", "command-line-utilities"]
 repository = "https://github.com/permissionlessweb/cargo-chec"
 
+exclude = ["scripts/", "test/", "benchmark_results/", ".vscode/", ".git/", "target/","Justfile", "*.log", ".cache/"]
+
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 serde_json = "1.0"
