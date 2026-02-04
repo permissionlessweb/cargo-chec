@@ -1,18 +1,18 @@
 [workspace]
-members = [".", "tes", "test"]
+members = [
+    "wrappers/chec",
+    "wrappers/tes",
+    "wrappers/carpulin",
+    "tools/demo-outputs",
+    "tools/coverage-test",
+]
+exclude = [
+    "tools/broken-tests",
+]
+resolver = "2"
 
-[package]
-name = "cargo-chec"
-version = "0.1.8"
-edition = "2021"
-description = "A cargo subcommand to run cargo check and output filtered error messages as a JSON array"
+[workspace.package]
 authors = ["hardnett <loaf0bred@proton.me>"]
 license = "MIT OR Apache-2.0"
-keywords = ["cargo", "subcommand", "rust", "errors", "check"]
-categories = ["development-tools", "command-line-utilities"]
 repository = "https://github.com/permissionlessweb/cargo-chec"
-exclude = ["tes/", "test/", "scripts/", "benchmark_results/", ".vscode/", "target/", "Justfile", "*.log", ".cache/"]
-
-[dependencies]
-clap = { version = "4.0", features = ["derive"] }
-serde_json = "1.0"
+edition = "2021"

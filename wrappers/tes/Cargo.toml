@@ -1,6 +1,6 @@
 [package]
 name = "cargo-tes"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 description = "A cargo subcommand to run cargo test and output filtered test failure messages as a JSON array"
 authors = ["hardnett <loaf0bred@proton.me>"]
@@ -9,7 +9,18 @@ keywords = ["cargo", "subcommand", "rust", "errors", "test"]
 categories = ["development-tools", "command-line-utilities"]
 repository = "https://github.com/permissionlessweb/cargo-chec"
 
-exclude = ["scripts/", "test/", "benchmark_results/", ".vscode/", ".git/", "target/","Justfile", "*.log", ".cache/"]
+exclude = [
+    "scripts/",
+    "benchmark_results/",
+    ".vscode/",
+    ".git/",
+    "target/",
+    "Justfile",
+    "*.log",
+    ".cache/",
+    "tools/",
+    "fam/",
+]
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }

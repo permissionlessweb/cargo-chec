@@ -47,16 +47,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Some(p) => (fs::read_to_string(p)?, None),
         None => {
-            // Spawn cargo test with piped stdout and stderr
-            // Force color output even when piped
+            // Split args: cargo flags before '--', test flags after
+            let (cargo_flags, test_flags): (Vec<_>, Vec<_>) = args.cargo_args.iter()
+                .partition(|arg| !arg.starts_with("--nocapture") && !arg.starts_with("--show-output"));
+
             let mut child = Command::new("cargo")
                 .arg("test")
                 .arg("--message-format=json")
-                .args(&args.cargo_args)
+                .args(cargo_flags)
                 .arg("--")
                 .arg("-Z")
                 .arg("unstable-options")
                 .arg("--format=json")
+                .args(test_flags)
                 .env("CARGO_TERM_COLOR", "always")
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped())

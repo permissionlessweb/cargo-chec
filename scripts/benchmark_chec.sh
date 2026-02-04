@@ -6,7 +6,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-TEST_DIR="$PROJECT_ROOT/test"
+TEST_DIR="$PROJECT_ROOT/tools/broken-tests"
 RESULTS_DIR="$PROJECT_ROOT/benchmark_results"
 TIMESTAMP=$(date "+%Y-%m-%d_%H-%M-%S")
 REPORT_FILE="$RESULTS_DIR/benchmark_report_$TIMESTAMP.txt"

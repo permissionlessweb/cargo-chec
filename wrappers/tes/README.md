@@ -2,7 +2,7 @@
 
 <center>
 
-![](../tes.png)
+![](../../fam/tes.png)
 
 A cargo subcommand that wraps `cargo test`, filters test failures, and outputs them as a JSON array of strings. Perfect for minimizing character/token count during agentic LLM sessions.
 

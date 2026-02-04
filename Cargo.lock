@@ -53,12 +53,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "benchmark-test-crate"
-version = "0.1.0"
+name = "cargo-carpulin"
+version = "0.2.0"
+dependencies = [
+ "clap",
+ "serde_json",
+]
 
 [[package]]
 name = "cargo-chec"
-version = "0.1.8"
+version = "0.2.0"
 dependencies = [
  "clap",
  "serde_json",
@@ -66,7 +70,7 @@ dependencies = [
 
 [[package]]
 name = "cargo-tes"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "clap",
  "serde_json",
@@ -119,6 +123,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
 
 [[package]]
+name = "coverage-test-crate"
+version = "0.1.0"
+
+[[package]]
 name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -147,6 +155,10 @@ name = "once_cell_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
+
+[[package]]
+name = "output-demo"
+version = "0.1.0"
 
 [[package]]
 name = "proc-macro2"

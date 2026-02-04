@@ -1,141 +1,110 @@
-# Cargo Chec
+# Cargo Chec Workspace
 
 <center>
 
-![](ferris.png)
+![](fam/fam-pic.png)
 
-A cargo subcommand that wraps `cargo check`, filters Rust errors/warnings, and outputs them as a JSON array of strings. Perfect minimizing character/token count during agentic LLM sessions.
+A family of cargo subcommands that wrap standard Rust tooling, filter verbose output, and return compact JSON. Built for minimizing character/token count during agentic LLM sessions.
 
 </center>
 
-> **Companion Tool**: Check out [Cargo Tes](tes/README.md) for test failure filtering!
+## Tools
 
-## Tools in This Repository
+| Crate | Wraps | Install | Docs |
+|-------|-------|---------|------|
+| **[cargo-chec](wrappers/chec/)** | `cargo check` | `cargo install cargo-chec` | [README](wrappers/chec/README.md) |
+| **[cargo-tes](wrappers/tes/)** | `cargo test` | `cargo install cargo-tes` | [README](wrappers/tes/README.md) |
+| **[cargo-carpulin](wrappers/carpulin/)** | `cargo llvm-cov` / `cargo tarpaulin` | `cargo install cargo-carpulin` | [README](wrappers/carpulin/README.md) |
 
-- **[Cargo Chec](README.md)**: Filters `cargo check` errors/warnings
-- **[Cargo Tes](tes/README.md)**: Filters `cargo test` failures
+### cargo-chec
 
-## Quick Start
-
-1. **Install globally**: `cargo install cargo-chec`
-2. **Run in any Rust project**: `cargo chec`
-
-Outputs a JSON array like `["Error (severity 5)...", "Related..."]`. No errors? `[]`.
-
-## Installation
+Filters `cargo check` errors and warnings into a JSON array of strings.
 
 ```bash
-cargo install cargo-chec
-```
-
-Requires Rust and Cargo.
-
-## Features
-
-- **Full cargo check support**: All cargo check flags pass through (--release, --package, --all-targets, etc.)
-- **Smart Filtering**: Only shows errors (severity 5) and warnings (severity 4)
-- **Structured Output**: JSON array of strings for easy parsing
-- **Flexible Input**: Supports files, stdin, or default cargo check
-- **Fast & Lean**: Minimal dependencies (clap, serde_json)
-
-## Usage
-
-### Default: Run cargo check
-
-```bash
-cd your-rust-project
 cargo chec
-# Output: ["Error (severity 5) from rustc in src/main.rs at line 1:1-10: Message"]
+# ["Error (severity 5) from rustc in src/main.rs at line 10:5-15: cannot find value `x`"]
 ```
 
-### With cargo check flags
+### cargo-tes
 
-All cargo check flags are supported:
+Filters `cargo test` failures into a JSON array of strings.
 
 ```bash
-# Check in release mode
-cargo chec --release
-
-# Check a specific package
-cargo chec -p my-package
-
-# Check all targets
-cargo chec --all-targets
-
-# Combine flags
-cargo chec --release --all-targets -p my-package
+cargo tes
+# ["Test failed: tests::my_test (exec_time: 0.001s) - assertion failed", "Suite failed: passed 5, failed 1 (exec_time: 0.003s)"]
 ```
 
-### Custom Input
+### cargo-carpulin
 
-Parse existing cargo check output instead of running cargo check:
+Runs coverage tools and outputs structured JSON with per-file uncovered line ranges.
 
 ```bash
-# From file
-cargo chec --input logs.json
-
-# From stdin
-cargo check --message-format=json | cargo chec --input -
+cargo carpulin --tool llvm-cov -- -p my-crate
 ```
-
-### Output Format
-
-JSON array of strings:
 
 ```json
-[
-  "Error (severity 5) from rustc in src/main.rs at line 10:5-15: cannot find value `x` in this scope",
-  "Error (severity 4) from rustc in src/lib.rs at line 5:1-10: unused variable: `y` Related: In src/lib.rs at line 5:1-5: remove this line"
-]
+{
+  "summary": {
+    "lines": { "count": 55, "covered": 30, "percent": 54.5 },
+    "functions": { "count": 10, "covered": 8, "percent": 80.0 }
+  },
+  "files": [
+    {
+      "file": "src/lib.rs",
+      "coverage": { "lines": { "count": 55, "covered": 30, "percent": 54.5 } },
+      "uncovered_lines": ["16-19", "28-30", "35-46", "49-54"]
+    }
+  ]
+}
 ```
 
-Empty on no issues: `[]`.
+## Workspace Layout
 
-## Troubleshooting
-
-- **Command not found?** Run `cargo install cargo-chec`.
-- **No output?** Project has no errors/warnings.
-- **Invalid JSON?** If using custom input, ensure valid NDJSON from cargo check.
+```
+.
+├── wrappers/
+│   ├── chec/          # cargo-chec   — cargo check filter
+│   ├── tes/           # cargo-tes    — cargo test filter
+│   └── carpulin/      # cargo-carpulin — coverage report filter
+├── tools/
+│   ├── coverage-test/ # Fixture crate with intentional coverage gaps
+│   └── demo-outputs/  # Demo output crate for cargo-tes
+├── scripts/
+│   ├── benchmark.sh           # cargo check vs cargo chec
+│   ├── benchmark_tes.sh       # cargo test vs cargo tes
+│   └── benchmark_carpulin.sh  # raw coverage vs cargo carpulin
+├── fam/               # Project images
+├── Justfile           # Release task runner
+└── Cargo.toml         # Workspace root
+```
 
 ## Benchmarks
 
+Learn about [benchmarking this workspace.](./BENCHMARKS.md)
+
+Run benchmarks locally:
+
 ```bash
-============================================
-Benchmark: cargo check vs cargo chec
-============================================
-
-Building cargo-chec...
-Build complete.
-
-Running cargo check --message-format=json...
-  Output: 80233 characters, 37 lines
-
-Running cargo chec (errors only)...
-  Output: 5130 characters, 1 lines
-
-Running cargo chec --include-warnings...
-  Output: 12397 characters, 1 lines
-
-============================================
-Results Summary
-============================================
-
-cargo check --message-format=json:
-  Characters: 80233
-  Lines: 37
-
-cargo chec (errors only):
-  Characters: 5130
-  Savings: 93.6%
-
-cargo chec --include-warnings:
-  Characters: 12397
-  Savings: 84.5%
+./scripts/benchmark.sh
+./scripts/benchmark_tes.sh
+./scripts/benchmark_carpulin.sh
 ```
 
-## Contributing
+## Development
 
-Open issues/PRs on GitHub. Built for the Rust ecosystem.
+```bash
+# Build all crates
+cargo build
+
+# Run all tests
+cargo test
+
+# Lint
+cargo clippy --workspace
+
+# Format
+cargo fmt --all
+```
 
 ## Releasing
 
@@ -154,41 +123,39 @@ just release
 
 Requires `just` (install via `cargo install just`).
 
+## Contributing
+
+Open issues/PRs on GitHub. Built for the Rust ecosystem.
+
 ---
 
 ## For AI Agents: Workspace Specifications
 
-This section provides structured details for AI tools to understand and interact with the codebase.
+### Workspace Members
 
-### Project Structure
+| Member | Type | Path |
+|--------|------|------|
+| `cargo-chec` | Binary (wrapper) | `wrappers/chec/src/main.rs` |
+| `cargo-tes` | Binary (wrapper) | `wrappers/tes/src/main.rs` |
+| `cargo-carpulin` | Binary (wrapper) | `wrappers/carpulin/src/main.rs` |
+| `demo-outputs` | Library (fixture) | `tools/demo-outputs/src/lib.rs` |
+| `coverage-test-crate` | Library (fixture) | `tools/coverage-test/src/lib.rs` |
 
-- **Source Code**: `src/main.rs` (single-file binary)
-- **Configuration**: `Cargo.toml` (dependencies and metadata)
-- **Scripts**: `scripts/` (sh scripts for release tasks)
-- **Justfile**: `Justfile` (command runner for release)
-- **Build Artifacts**: `target/` (generated by Cargo)
+### Shared Patterns
 
-### Dependencies
+All wrapper crates follow the same structure:
 
-- `clap`: CLI argument parsing with cargo subcommand support
-- `serde_json`: JSON parsing and serialization
+- Single-file binary in `src/main.rs`
+- Dependencies: `clap` 4.0 (derive) + `serde_json` 1.0
+- Clap subcommand enum for `cargo <name>` invocation
+- `--input FILE` or `-` for stdin to parse existing output
+- Trailing `cargo_args` passed through to the underlying tool
+- Piped stdout/stderr with stderr streaming thread
 
 ### Build Commands
 
-- **Build**: `cargo build --release` → `target/release/cargo-chec`
-- **Lint**: `cargo clippy`
-- **Format**: `cargo fmt`
-- **Test**: `cargo test`
-- **Publish**: `cargo publish`
-
-### Runtime Behavior
-
-- **Entry Point**: `main()` in `src/main.rs`
-- **Input**: If no `--input`, runs `cargo check --message-format=json` with any additional args passed through
-- **Filtering**: Errors (severity 5) and warnings (severity 4) only
-- **Output**: JSON array of formatted error strings to stdout
-
-### Code Style
-
-- Idiomatic Rust with `?` operator and iterator chains
-- Edition 2021, rustfmt-compliant
+- **Build all**: `cargo build`
+- **Build one**: `cargo build -p cargo-chec`
+- **Test all**: `cargo test`
+- **Test one**: `cargo test -p cargo-carpulin`
+- **Benchmark**: `./scripts/benchmark_carpulin.sh`

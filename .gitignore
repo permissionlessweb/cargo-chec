@@ -1,2 +1,4 @@
-/target
-test/target
+target
+fixtures/*
+.DS_store
+benchmark_results
