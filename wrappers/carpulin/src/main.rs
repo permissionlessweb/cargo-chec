@@ -22,6 +22,11 @@ fn make_relative(path: &str) -> String {
     }
 }
 
+/// Truncate percentage to 2 decimal places using string formatting
+fn round_percent(percent: f64) -> f64 {
+    format!("{:.2}", percent).parse().unwrap_or(percent)
+}
+
 #[derive(Parser)]
 #[command(name = "cargo", bin_name = "cargo")]
 enum Cargo {
@@ -97,12 +102,12 @@ fn parse_llvm_cov(json_str: &str) -> Result<Value, Box<dyn std::error::Error>> {
         "lines": {
             "count": totals["lines"]["count"],
             "covered": totals["lines"]["covered"],
-            "percent": totals["lines"]["percent"]
+            "percent": round_percent(totals["lines"]["percent"].as_f64().unwrap_or(0.0))
         },
         "functions": {
             "count": totals["functions"]["count"],
             "covered": totals["functions"]["covered"],
-            "percent": totals["functions"]["percent"]
+            "percent": round_percent(totals["functions"]["percent"].as_f64().unwrap_or(0.0))
         }
     });
 
@@ -144,7 +149,7 @@ fn parse_llvm_cov(json_str: &str) -> Result<Value, Box<dyn std::error::Error>> {
             let file_summary = &file["summary"];
             let lines_count = file_summary["lines"]["count"].as_i64().unwrap_or(0);
             let lines_covered = file_summary["lines"]["covered"].as_i64().unwrap_or(0);
-            let lines_percent = file_summary["lines"]["percent"].as_f64().unwrap_or(0.0);
+            let lines_percent = round_percent(file_summary["lines"]["percent"].as_f64().unwrap_or(0.0));
 
             files.push(json!({
                 "file": filename,
@@ -216,7 +221,7 @@ fn parse_tarpaulin(json_str: &str) -> Result<Value, Box<dyn std::error::Error>> 
 
             uncovered.sort();
             let percent = if file_lines > 0 {
-                (file_covered as f64 / file_lines as f64) * 100.0
+                round_percent((file_covered as f64 / file_lines as f64) * 100.0)
             } else {
                 0.0
             };
@@ -236,7 +241,7 @@ fn parse_tarpaulin(json_str: &str) -> Result<Value, Box<dyn std::error::Error>> 
     }
 
     let total_percent = if total_lines > 0 {
-        (total_covered as f64 / total_lines as f64) * 100.0
+        round_percent((total_covered as f64 / total_lines as f64) * 100.0)
     } else {
         0.0
     };

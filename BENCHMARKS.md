@@ -4,7 +4,7 @@ We implement benchmarks by counting the lines and characters returned from each 
 
 Each tool compresses verbose Rust tooling output into compact JSON.
 
-**Last updated:** 2026-02-08 20:53:04
+**Last updated:** 2026-02-08 21:03:58
 
 ## Summary
 
@@ -12,8 +12,8 @@ Each tool compresses verbose Rust tooling output into compact JSON.
 |------|------------|-----------------|---------|
 | cargo-chec (errors only) | 81745 chars, 37 lines | 4865 chars, 1 lines | **94.0%** |
 | cargo-tes | 163446 chars, 73 lines | 9281 chars, 1 lines | **94.3%** |
-| cargo-carpulin (llvm-cov) | 40309 chars, 2205 lines | 529 chars, 32 lines | **98.6%** |
-| cargo-carpulin (tarpaulin) | 53156 chars, 430 lines | 443 chars, 27 lines | **99.1%** |
+| cargo-carpulin (llvm-cov) | 40309 chars, 2205 lines | 507 chars, 32 lines | **98.7%** |
+| cargo-carpulin (tarpaulin) | 53154 chars, 430 lines | 417 chars, 27 lines | **99.2%** |
 
 ## cargo-chec
 
@@ -49,22 +49,22 @@ cargo llvm-cov --json:
   Lines:      2205
 
 cargo carpulin --tool llvm-cov:
-  Characters: 529
+  Characters: 507
   Lines:      32
-  Savings:    98.6%
+  Savings:    98.7%
 ```
 
 ## cargo-carpulin (tarpaulin)
 
 ```
 cargo tarpaulin --out json:
-  Characters: 53156
+  Characters: 53154
   Lines:      430
 
 cargo carpulin --tool tarpaulin:
-  Characters: 443
+  Characters: 417
   Lines:      27
-  Savings:    99.1%
+  Savings:    99.2%
 ```
 
 ## Running Benchmarks
