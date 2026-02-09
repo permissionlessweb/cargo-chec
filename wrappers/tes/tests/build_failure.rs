@@ -48,14 +48,18 @@ fn build_rs_failure_does_not_hang() {
 
     // Should report the build failure exit code
     assert!(
-        parsed.iter().any(|s| s.contains("Cargo test failed with exit code")),
+        parsed
+            .iter()
+            .any(|s| s.contains("Cargo test failed with exit code")),
         "expected exit code error in output, got: {:?}",
         parsed
     );
 
     // Should capture the build.rs panic message from stderr
     assert!(
-        parsed.iter().any(|s| s.contains("build.rs") || s.contains("intentional")),
+        parsed
+            .iter()
+            .any(|s| s.contains("build.rs") || s.contains("intentional")),
         "expected build.rs error details in output, got: {:?}",
         parsed
     );

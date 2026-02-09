@@ -149,7 +149,8 @@ fn parse_llvm_cov(json_str: &str) -> Result<Value, Box<dyn std::error::Error>> {
             let file_summary = &file["summary"];
             let lines_count = file_summary["lines"]["count"].as_i64().unwrap_or(0);
             let lines_covered = file_summary["lines"]["covered"].as_i64().unwrap_or(0);
-            let lines_percent = round_percent(file_summary["lines"]["percent"].as_f64().unwrap_or(0.0));
+            let lines_percent =
+                round_percent(file_summary["lines"]["percent"].as_f64().unwrap_or(0.0));
 
             files.push(json!({
                 "file": filename,
