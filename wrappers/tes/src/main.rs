@@ -57,8 +57,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => {
             eprintln!("⠿ Running cargo test...");
             // Split args: cargo flags before '--', test flags after
-            let (cargo_flags, test_flags): (Vec<_>, Vec<_>) = args.cargo_args.iter()
-                .partition(|arg| !arg.starts_with("--nocapture") && !arg.starts_with("--show-output"));
+            let (cargo_flags, test_flags): (Vec<_>, Vec<_>) =
+                args.cargo_args.iter().partition(|arg| {
+                    !arg.starts_with("--nocapture") && !arg.starts_with("--show-output")
+                });
 
             let mut child = Command::new("cargo")
                 .arg("test")
@@ -165,7 +167,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             // include stderr output so the user sees what went wrong
             let has_compiler_errors = results.iter().any(|r| r.starts_with("Error (severity"));
             if !has_compiler_errors {
-                let error_lines: Vec<&str> = stderr_lines.iter()
+                let error_lines: Vec<&str> = stderr_lines
+                    .iter()
                     .map(|s| s.as_str())
                     .filter(|l| {
                         let trimmed = l.trim();
@@ -176,8 +179,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     })
                     .collect();
                 if !error_lines.is_empty() {
-                    let stderr_summary: String = error_lines.join(" ").split_whitespace()
-                        .collect::<Vec<_>>().join(" ");
+                    let stderr_summary: String = error_lines
+                        .join(" ")
+                        .split_whitespace()
+                        .collect::<Vec<_>>()
+                        .join(" ");
                     results.push(format!("Build stderr: {}", stderr_summary));
                 }
             }
