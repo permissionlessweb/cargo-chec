@@ -39,12 +39,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (json_str, failure_opt) = match &args.input {
         Some(p) if p == "-" => {
+            eprintln!("⠿ Reading from stdin...");
             let mut s = String::new();
             io::stdin().read_to_string(&mut s)?;
             (s, None)
         }
-        Some(p) => (fs::read_to_string(p)?, None),
+        Some(p) => {
+            eprintln!("⠿ Reading from file: {}", p);
+            (fs::read_to_string(p)?, None)
+        }
         None => {
+            eprintln!("⠿ Running cargo check...");
             let output = std::process::Command::new("cargo")
                 .arg("check")
                 .arg("--message-format=json")
@@ -56,6 +61,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
+    eprintln!("⠿ Parsing compiler messages...");
     let mut results: Vec<String> = json_str.lines()
         .filter_map(|l| serde_json::from_str::<Value>(l).ok())
         .filter_map(|log| {
@@ -77,10 +83,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "endLineNumber": sp["line_end"], "endColumn": sp["column_end"]}))
             }).collect();
 
-            let mut out = format!("{} (severity {}) from rustc in {} at line {}:{}-{}: {}",
+            let mut out = format!("{} (severity {}) in {}:{}:{}-{}: {}",
                 label, severity, resource, sl, sc, ec, message);
             for r in &related {
-                out.push_str(&format!(" Related: In {} at line {}:{}-{}: {}",
+                out.push_str(&format!(" Related: In {}:{}:{}-{}: {}",
                     r["resource"].as_str().unwrap_or(""), r["startLineNumber"], r["startColumn"],
                     r["endColumn"], r["message"].as_str().unwrap_or("").split_whitespace().collect::<Vec<_>>().join(" ")));
             }
@@ -97,6 +103,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    eprintln!("✓ Found {} issue(s), outputting JSON...", results.len());
     println!("{}", serde_json::to_string(&results)?);
     Ok(())
 }

@@ -1,6 +1,10 @@
 // Tests demonstrating --nocapture output capture with cargo tes
+// These are fixture tests for testing cargo-tes functionality.
+// They are ignored by default to prevent normal test runs from failing.
+// Run with: cargo test -- --ignored
 
 #[test]
+#[ignore = "fixture test for cargo-tes (intentionally fails)"]
 fn test_failing_with_stdout() {
     println!("STDOUT: This is normal output from failing test");
     println!("STDOUT: Multiple lines of output");
@@ -9,6 +13,7 @@ fn test_failing_with_stdout() {
 }
 
 #[test]
+#[ignore = "fixture test for cargo-tes (intentionally fails)"]
 fn test_failing_with_stderr() {
     eprintln!("STDERR: This is error output from failing test");
     eprintln!("STDERR: Multiple error lines");
@@ -17,6 +22,7 @@ fn test_failing_with_stderr() {
 }
 
 #[test]
+#[ignore = "fixture test for cargo-tes (intentionally fails)"]
 fn test_failing_with_both_streams() {
     println!("STDOUT: Normal output line 1");
     eprintln!("STDERR: Error output line 1");

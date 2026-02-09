@@ -4,9 +4,23 @@ use std::{
     collections::BTreeSet,
     fs,
     io::{self, BufRead, BufReader, Read, Write},
+    path::Path,
     process::{Command, Stdio},
     thread,
 };
+
+/// Strip absolute path prefix to make it relative to the current working directory.
+/// e.g. "/Users/me/project/src/lib.rs" -> "src/lib.rs" when cwd is "/Users/me/project"
+fn make_relative(path: &str) -> String {
+    if let Ok(cwd) = std::env::current_dir() {
+        Path::new(path)
+            .strip_prefix(&cwd)
+            .map(|p| p.to_string_lossy().into_owned())
+            .unwrap_or_else(|_| path.to_string())
+    } else {
+        path.to_string()
+    }
+}
 
 #[derive(Parser)]
 #[command(name = "cargo", bin_name = "cargo")]
@@ -95,7 +109,7 @@ fn parse_llvm_cov(json_str: &str) -> Result<Value, Box<dyn std::error::Error>> {
     let mut files = Vec::new();
     if let Some(file_list) = data["files"].as_array() {
         for file in file_list {
-            let filename = file["filename"].as_str().unwrap_or("");
+            let filename = make_relative(file["filename"].as_str().unwrap_or(""));
             let segments = match file["segments"].as_array() {
                 Some(s) => s,
                 None => continue,
@@ -171,12 +185,7 @@ fn parse_tarpaulin(json_str: &str) -> Result<Value, Box<dyn std::error::Error>> 
                         .join("/")
                 })
                 .unwrap_or_default();
-            // Normalize path: join parts gives "/Users/..." which is correct
-            let filename = if path_parts.starts_with("//") {
-                path_parts[1..].to_string()
-            } else {
-                path_parts
-            };
+            let filename = make_relative(&path_parts);
 
             let traces = match file["traces"].as_array() {
                 Some(t) => t,
@@ -255,10 +264,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(p) => fs::read_to_string(p)?,
         None => {
             let (program, base_args): (&str, Vec<&str>) = match args.tool.as_str() {
-                "tarpaulin" => ("cargo", vec!["tarpaulin", "--out", "json", "--output-dir", "-"]),
+                "tarpaulin" => (
+                    "cargo",
+                    vec!["tarpaulin", "--out", "json", "--output-dir", "-"],
+                ),
                 _ => ("cargo", vec!["llvm-cov", "--json"]),
             };
-
+            eprintln!("⠿ Running {} {}...", program, base_args.join(" "));
             let mut cmd = Command::new(program);
             cmd.args(&base_args);
             cmd.args(&args.cargo_args);
@@ -293,10 +305,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 fs::read_to_string(&report_path)?
             } else {
                 // llvm-cov outputs JSON to stdout
-                let mut child = cmd
-                    .stdout(Stdio::piped())
-                    .stderr(Stdio::piped())
-                    .spawn()?;
+                let mut child = cmd.stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()?;
 
                 let stderr = child.stderr.take().expect("capture stderr");
                 let stderr_handle = thread::spawn(move || {
@@ -317,11 +326,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
+    eprintln!("⠿ Parsing coverage data...");
     let result = match args.tool.as_str() {
         "tarpaulin" => parse_tarpaulin(&json_str)?,
         _ => parse_llvm_cov(&json_str)?,
     };
 
+    let files_count = result["files"].as_array().map(|a| a.len()).unwrap_or(0);
+    eprintln!("✓ Processed {} file(s), outputting JSON...", files_count);
     println!("{}", serde_json::to_string_pretty(&result)?);
     Ok(())
 }
@@ -393,11 +405,11 @@ mod tests {
         );
 
         // Verify never_called lines (35-46) appear as a range
-        let uncovered_strs: Vec<&str> = uncovered.iter().filter_map(|v| v.as_str()).collect();
+        let unc: Vec<&str> = uncovered.iter().filter_map(|v| v.as_str()).collect();
         assert!(
-            uncovered_strs.iter().any(|s| s.contains("35") || s.contains("36")),
-            "should include never_called function lines in uncovered ranges: {:?}",
-            uncovered_strs
+            unc.iter().any(|s| s.contains("35") || s.contains("36")),
+            "include : {:?}",
+            unc
         );
     }
 
@@ -435,11 +447,11 @@ mod tests {
         );
 
         // Verify never_called lines appear
-        let uncovered_strs: Vec<&str> = uncovered.iter().filter_map(|v| v.as_str()).collect();
+        let unc: Vec<&str> = uncovered.iter().filter_map(|v| v.as_str()).collect();
         assert!(
-            uncovered_strs.iter().any(|s| s.contains("35") || s.contains("36")),
-            "should include never_called function lines: {:?}",
-            uncovered_strs
+            unc.iter().any(|s| s.contains("35") || s.contains("36")),
+            "should include: {:?}",
+            unc
         );
     }
 }
