@@ -8,6 +8,7 @@ members = [
 ]
 exclude = [
     "tools/broken-tests",
+    "tools/build-fail",
 ]
 resolver = "2"
 

@@ -1,85 +1,80 @@
 # Benchmarks
 
-We implement benchmarks by counting the loc and characters returned from each unwrapped subcommand, and then comapring it with the loc & characters from the wrapped subcommands. This gives us a direct comparison between what will be returned to the llm context during agentic sessions.
+We implement benchmarks by counting the lines and characters returned from each unwrapped subcommand, and then comparing it with the lines & characters from the wrapped subcommands. This gives us a direct comparison between what will be returned to the LLM context during agentic sessions.
 
-Each tool compresses verbose Rust tooling output into compact JSON:
+Each tool compresses verbose Rust tooling output into compact JSON.
+
+**Last updated:** 2026-02-08 20:53:04
+
+## Summary
 
 | Tool | Raw Output | Filtered Output | Savings |
-|------|-----------|----------------|---------|
-| cargo-chec (errors only) | 80,233 chars | 5,130 chars | **93.6%** |
-| cargo-chec (with warnings) | 80,233 chars | 12,397 chars | **84.5%** |
-| cargo-tes | 161,502 chars | 10,515 chars | **93.4%** |
-| cargo-carpulin (llvm-cov) | 8,887 chars | 565 chars | **93.6%** |
-| cargo-carpulin (tarpaulin) | 42,610 chars | 479 chars | **98.8%** |
+|------|------------|-----------------|---------|
+| cargo-chec (errors only) | 81745 chars, 37 lines | 4865 chars, 1 lines | **94.0%** |
+| cargo-tes | 163446 chars, 73 lines | 9281 chars, 1 lines | **94.3%** |
+| cargo-carpulin (llvm-cov) | 40309 chars, 2205 lines | 529 chars, 32 lines | **98.6%** |
+| cargo-carpulin (tarpaulin) | 53156 chars, 430 lines | 443 chars, 27 lines | **99.1%** |
 
-## Cargo Chec
+## cargo-chec
 
-```sh
-============================================
-Character Count Comparison
-============================================
-
+```
 cargo check --message-format=json:
   Characters: 81745
-  Lines: 37
+  Lines:      37
 
 cargo chec (errors only):
-  Characters: 5144
-  Lines: 1
-  Character savings: 93.7%
-
-cargo chec --include-warnings:
-  Characters: 12411
-  Lines: 1
-  Character savings: 84.8%
+  Characters: 4865
+  Lines:      1
+  Savings:    94.0%
 ```
 
-## Cargo Test
+## cargo-tes
 
-```sh
-============================================
-Results Summary
-============================================
-
-cargo test --message-format=json -- -Z unstable-options --format=json:
-  Time: 0m0.203s
+```
+cargo test --message-format=json:
   Characters: 163446
-  Lines: 73
+  Lines:      73
 
 cargo tes:
-  Time: 0m0.276s
-  Characters: 9839
-  Lines: 1
-  Character savings: 93.9%
-
+  Characters: 9281
+  Lines:      1
+  Savings:    94.3%
 ```
 
-## Cargo Carpulin
+## cargo-carpulin (llvm-cov)
 
-```sh
-=======================================================
-llvm-cov Comparison
-=======================================================
-
+```
 cargo llvm-cov --json:
-  Characters: 8887
-  Lines:      0
+  Characters: 40309
+  Lines:      2205
 
 cargo carpulin --tool llvm-cov:
-  Characters: 565
+  Characters: 529
   Lines:      32
-  Character savings: 93.6%
+  Savings:    98.6%
+```
 
-=======================================================
-tarpaulin Comparison
-=======================================================
+## cargo-carpulin (tarpaulin)
 
+```
 cargo tarpaulin --out json:
-  Characters: 42610
-  Lines:      0
+  Characters: 53156
+  Lines:      430
 
 cargo carpulin --tool tarpaulin:
-  Characters: 479
+  Characters: 443
   Lines:      27
-  Character savings: 98.8%
+  Savings:    99.1%
 ```
+
+## Running Benchmarks
+
+Run the unified benchmark to test all tools and update this file:
+
+```bash
+just benchmark
+# or
+./scripts/benchmark.sh
+```
+
+Detailed results are saved to `benchmark_results/benchmark_unified_TIMESTAMP.txt`.

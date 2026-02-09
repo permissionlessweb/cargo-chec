@@ -34,19 +34,28 @@ struct TestArgs {
     /// Include ignored tests in the output as warnings
     #[arg(long)]
     include_ignored: bool,
+
+    /// Stream raw stderr/stdout to terminal while running
+    #[arg(long, short)]
+    verbose: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let Cargo::Tes(args) = Cargo::parse();
 
-    let (json_str, failure_status) = match &args.input {
+    let (json_str, failure_status, stderr_lines) = match &args.input {
         Some(p) if p == "-" => {
+            eprintln!("⠿ Reading from stdin...");
             let mut s = String::new();
             io::stdin().read_to_string(&mut s)?;
-            (s, None)
+            (s, None, Vec::new())
         }
-        Some(p) => (fs::read_to_string(p)?, None),
+        Some(p) => {
+            eprintln!("⠿ Reading from file: {}", p);
+            (fs::read_to_string(p)?, None, Vec::new())
+        }
         None => {
+            eprintln!("⠿ Running cargo test...");
             // Split args: cargo flags before '--', test flags after
             let (cargo_flags, test_flags): (Vec<_>, Vec<_>) = args.cargo_args.iter()
                 .partition(|arg| !arg.starts_with("--nocapture") && !arg.starts_with("--show-output"));
@@ -65,23 +74,38 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .stderr(Stdio::piped())
                 .spawn()?;
 
-            // Take ownership of stderr for streaming in a separate thread
+            let verbose = args.verbose;
+
+            // Capture stderr in a separate thread, streaming to terminal
+            // and collecting lines for error reporting on build failure
             let stderr = child.stderr.take().expect("capture stderr");
             let stderr_handle = thread::spawn(move || {
+                let mut captured = Vec::new();
                 for line in BufReader::new(stderr).lines().map_while(Result::ok) {
                     if !line.trim().starts_with("Running ") {
                         let _ = writeln!(io::stderr(), "{}", line);
                     }
+                    captured.push(line);
                 }
+                captured
             });
+
+            // Collect stdout, optionally streaming to terminal
             let stdout: Vec<_> = BufReader::new(child.stdout.take().expect("capture stdout"))
                 .lines()
                 .map_while(Result::ok)
+                .inspect(|line| {
+                    if verbose {
+                        let _ = writeln!(io::stderr(), "[stdout] {}", line);
+                    }
+                })
                 .collect();
+
             let status = child.wait()?;
-            let _ = stderr_handle.join();
+            let stderr_lines = stderr_handle.join().unwrap_or_default();
             let json_str = stdout.join("\n");
-            (json_str, Some(status))
+            eprintln!("⠿ Parsing test results...");
+            (json_str, Some(status), stderr_lines)
         }
     };
 
@@ -107,10 +131,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         "endLineNumber": sp["line_end"], "endColumn": sp["column_end"]}))
                 }).collect();
 
-                let mut out = format!("{} (severity {}) from rustc in {} at line {}:{}-{}: {}",
+                let mut out = format!("{} (severity {}) in {}:{}:{}-{}: {}",
                     label, severity, resource, sl, sc, ec, message);
                 for r in &related {
-                    out.push_str(&format!(" Related: In {} at line {}:{}-{}: {}",
+                    out.push_str(&format!(" Related: In {}:{}:{}-{}: {}",
                         r["resource"].as_str().unwrap_or(""), r["startLineNumber"], r["startColumn"],
                         r["endColumn"], r["message"].as_str().unwrap_or("").split_whitespace().collect::<Vec<_>>().join(" ")));
                 }
@@ -134,13 +158,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if let Some(status) = failure_status {
         if !status.success() {
-            results.push(format!(
-                "Cargo test failed with exit code {}",
-                status.code().unwrap_or(-1)
-            ));
+            let exit_code = status.code().unwrap_or(-1);
+            results.push(format!("Cargo test failed with exit code {}", exit_code));
+
+            // If no compiler messages were captured in JSON (e.g. build.rs failure),
+            // include stderr output so the user sees what went wrong
+            let has_compiler_errors = results.iter().any(|r| r.starts_with("Error (severity"));
+            if !has_compiler_errors {
+                let error_lines: Vec<&str> = stderr_lines.iter()
+                    .map(|s| s.as_str())
+                    .filter(|l| {
+                        let trimmed = l.trim();
+                        !trimmed.is_empty()
+                            && !trimmed.starts_with("Compiling ")
+                            && !trimmed.starts_with("Downloading ")
+                            && !trimmed.starts_with("Downloaded ")
+                    })
+                    .collect();
+                if !error_lines.is_empty() {
+                    let stderr_summary: String = error_lines.join(" ").split_whitespace()
+                        .collect::<Vec<_>>().join(" ");
+                    results.push(format!("Build stderr: {}", stderr_summary));
+                }
+            }
         }
     }
 
+    eprintln!("✓ Found {} failure(s), outputting JSON...", results.len());
     println!("{}", serde_json::to_string(&results)?);
     Ok(())
 }

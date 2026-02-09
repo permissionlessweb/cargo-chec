@@ -16,6 +16,29 @@ A family of cargo subcommands that wrap standard Rust tooling, filter verbose ou
 | **[cargo-tes](wrappers/tes/)** | `cargo test` | `cargo install cargo-tes` | [README](wrappers/tes/README.md) |
 | **[cargo-carpulin](wrappers/carpulin/)** | `cargo llvm-cov` / `cargo tarpaulin` | `cargo install cargo-carpulin` | [README](wrappers/carpulin/README.md) |
 
+## Installation
+
+**From crates.io** (recommended for users):
+```bash
+cargo install cargo-chec cargo-tes cargo-carpulin
+```
+
+**From source** (for development):
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/rust-log-filter
+cd rust-log-filter
+
+# Install all tools to ~/.cargo/bin using just
+just install
+
+# Or build and install manually
+cargo build --release
+cp target/release/cargo-{chec,tes,carpulin} ~/.cargo/bin/
+```
+
+## Usage
+
 ### cargo-chec
 
 Filters `cargo check` errors and warnings into a JSON array of strings.
@@ -70,9 +93,7 @@ cargo carpulin --tool llvm-cov -- -p my-crate
 │   ├── coverage-test/ # Fixture crate with intentional coverage gaps
 │   └── demo-outputs/  # Demo output crate for cargo-tes
 ├── scripts/
-│   ├── benchmark.sh           # cargo check vs cargo chec
-│   ├── benchmark_tes.sh       # cargo test vs cargo tes
-│   └── benchmark_carpulin.sh  # raw coverage vs cargo carpulin
+│   └── benchmark.sh           # Unified benchmark for all tools
 ├── fam/               # Project images
 ├── Justfile           # Release task runner
 └── Cargo.toml         # Workspace root
@@ -82,13 +103,15 @@ cargo carpulin --tool llvm-cov -- -p my-crate
 
 Learn about [benchmarking this workspace.](./BENCHMARKS.md)
 
-Run benchmarks locally:
+Run the unified benchmark:
 
 ```bash
+just benchmark
+# or
 ./scripts/benchmark.sh
-./scripts/benchmark_tes.sh
-./scripts/benchmark_carpulin.sh
 ```
+
+This will benchmark all three tools (cargo-chec, cargo-tes, cargo-carpulin) and update `BENCHMARKS.md` with fresh results.
 
 ## Development
 
@@ -96,14 +119,24 @@ Run benchmarks locally:
 # Build all crates
 cargo build
 
+# Build and install to ~/.cargo/bin
+just install
+
 # Run all tests
+just test
+# or
 cargo test
 
 # Lint
+just lint
+# or
 cargo clippy --workspace
 
 # Format
 cargo fmt --all
+
+# Run all checks (test + format + lint)
+just check
 ```
 
 ## Releasing
