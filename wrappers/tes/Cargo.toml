@@ -1,6 +1,6 @@
 [package]
 name = "cargo-tes"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 description = "A cargo subcommand to run cargo test and output filtered test failure messages as a JSON array"
 authors = ["hardnett <loaf0bred@proton.me>"]

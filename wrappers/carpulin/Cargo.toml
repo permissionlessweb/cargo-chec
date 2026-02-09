@@ -1,6 +1,6 @@
 [package]
 name = "cargo-carpulin"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 description = "A cargo subcommand to run coverage tools and output structured JSON with per-file uncovered line ranges"
 authors = ["hardnett <loaf0bred@proton.me>"]
