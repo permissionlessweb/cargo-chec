@@ -4,7 +4,7 @@
 
 ![](../../fam/ferris.png)
 
-A cargo subcommand that wraps `cargo check`, filters Rust errors/warnings, and outputs them as a JSON array of strings. Perfect for minimizing character/token count during agentic LLM sessions.
+A cargo subcommand that wraps `cargo check`, filters Rust errors/warnings, and outputs them as a TOON OR JSON array of strings. Perfect for minimizing character/token count during agentic LLM sessions.
 
 </center>
 
@@ -13,7 +13,7 @@ A cargo subcommand that wraps `cargo check`, filters Rust errors/warnings, and o
 1. **Install globally**: `cargo install cargo-chec`
 2. **Run in any Rust project**: `cargo chec`
 
-Outputs a JSON array like `["Error (severity 5)...", "Related..."]`. No errors? `[]`.
+Outputs a TOON OR JSON array like `["Error (severity 5)...", "Related..."]`. No errors? `[]`.
 
 ## Installation
 
@@ -27,7 +27,7 @@ Requires Rust and Cargo.
 
 - **Full cargo check support**: All cargo check flags pass through (--release, --package, --all-targets, etc.)
 - **Smart Filtering**: Only shows errors (severity 5) and warnings (severity 4)
-- **Structured Output**: JSON array of strings for easy parsing
+- **Structured Output**: TOON OR JSON array of strings for easy parsing
 - **Flexible Input**: Supports files, stdin, or default cargo check
 - **Fast & Lean**: Minimal dependencies (clap, serde_json)
 
@@ -73,7 +73,7 @@ cargo check --message-format=json | cargo chec --input -
 
 ### Output Format
 
-JSON array of strings:
+TOON OR JSON array of strings:
 
 ```json
 [
@@ -136,4 +136,4 @@ cargo chec --include-warnings:
 - **Entry Point**: `main()` in `src/main.rs`
 - **Input**: If no `--input`, runs `cargo check --message-format=json` with any additional args passed through
 - **Filtering**: Errors (severity 5) and warnings (severity 4) only
-- **Output**: JSON array of formatted error strings to stdout
+- **Output**: TOON OR JSON array of formatted error strings to stdout

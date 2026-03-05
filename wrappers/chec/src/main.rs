@@ -13,10 +13,13 @@ enum Cargo {
 }
 
 #[derive(clap::Args)]
-#[command(version, about = "Filtered cargo check errors/warnings, as JSON")]
 #[command(
-    long_about = "Runs `cargo check --message-format=json` and transforms the output into a \
-    simplified JSON array of error strings. Useful for CI/CD pipelines, editors, and AI tools.\n\n\
+    version,
+    about = "Filtered cargo check errors/warnings, in TOON format"
+)]
+#[command(
+    long_about = "Runs `cargo check --message-format=json` and transforms the output into \
+    TOON format (default) or JSON. Optimized for LLM consumption.\n\n\
     All cargo check flags are supported and passed through (e.g. --release, --package, --all-targets).\n\n\
     Use --input to parse existing cargo check output instead of running cargo check."
 )]
@@ -32,6 +35,10 @@ struct Args {
     /// Include warnings in the output
     #[arg(long)]
     include_warnings: bool,
+
+    /// Output as JSON instead of TOON format
+    #[arg(long)]
+    json: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -39,24 +46,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (json_str, failure_opt) = match &args.input {
         Some(p) if p == "-" => {
-            eprintln!("⠿ Reading from stdin...");
             let mut s = String::new();
             io::stdin().read_to_string(&mut s)?;
             (s, None)
         }
-        Some(p) => {
-            eprintln!("⠿ Reading from file: {}", p);
-            (fs::read_to_string(p)?, None)
-        }
+        Some(p) => (fs::read_to_string(p)?, None),
         None => {
-            eprintln!("⠿ Running cargo check...");
             let output = std::process::Command::new("cargo")
                 .arg("check")
                 .arg("--message-format=json")
                 .args(&args.cargo_args)
                 .output()?;
-            let status = output.status;
-            let stderr = output.stderr;
+            let (status, stderr) = (output.status, output.stderr);
+
             (String::from_utf8(output.stdout)?, Some((status, stderr)))
         }
     };
@@ -71,13 +73,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "warning" if args.include_warnings => (4, "Warning"),
                 _ => return None
             };
-            let span = msg["spans"].as_array()?.first()?;
+            let spans = msg["spans"].as_array()?;
+            let span = spans.iter()
+                .find(|s| s["is_primary"].as_bool() == Some(true))
+                .or_else(|| spans.first())?;
             let resource = span["file_name"].as_str()?;
             let (sl, sc, ec) = (span["line_start"].as_i64()?, span["column_start"].as_i64()?, span["column_end"].as_i64()?);
-            let message: String = msg["rendered"].as_str()?.split_whitespace().collect::<Vec<_>>().join(" ");
+            let message: String = msg["rendered"].as_str()?
+                .lines()
+                .filter(|l| !l.trim_start().starts_with("-->"))
+                .collect::<Vec<_>>()
+                .join(" ")
+                .split_whitespace()
+                .collect::<Vec<_>>()
+                .join(" ");
 
             let related: Vec<Value> = msg["children"].as_array().unwrap_or(&vec![]).iter().filter_map(|c| {
                 let sp = c["spans"].as_array()?.first()?;
+                // Skip import suggestions (line 1, col 1) — already in rendered message
+                if sp["line_start"].as_i64() == Some(1) && sp["column_start"].as_i64() == Some(1) {
+                    return None;
+                }
                 Some(json!({"message": c["message"].as_str()?, "resource": sp["file_name"].as_str()?,
                     "startLineNumber": sp["line_start"], "startColumn": sp["column_start"],
                     "endLineNumber": sp["line_end"], "endColumn": sp["column_end"]}))
@@ -103,7 +119,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    eprintln!("✓ Found {} issue(s), outputting JSON...", results.len());
-    println!("{}", serde_json::to_string(&results)?);
+    let format_label = if args.json { "JSON" } else { "TOON" };
+    eprintln!("✓{} Remain{}...", results.len(), format_label);
+    if args.json {
+        println!("{}", serde_json::to_string(&results)?);
+    } else {
+        println!("{}", toon_format::encode_default(&results)?);
+    }
     Ok(())
 }

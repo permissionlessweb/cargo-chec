@@ -4,7 +4,7 @@
 
 ![](../../fam/tes.png)
 
-A cargo subcommand that wraps `cargo test`, filters test failures, and outputs them as a JSON array of strings. Perfect for minimizing character/token count during agentic LLM sessions.
+A cargo subcommand that wraps `cargo test`, filters test failures, and outputs them as a TOON OR JSON array of strings. Perfect for minimizing character/token count during agentic LLM sessions.
 
 </center>
 
@@ -13,7 +13,7 @@ A cargo subcommand that wraps `cargo test`, filters test failures, and outputs t
 1. **Install globally**: `cargo install cargo-tes`
 2. **Run in any Rust project**: `cargo tes`
 
-Outputs a JSON array like `["Test failed: test_name (exec_time: 0.001s) - failure message", "Suite failed: passed 1, failed 2 (exec_time: 0.005s)"]`. All tests pass? `[]`.
+Outputs a TOON OR JSON array like `["Test failed: test_name (exec_time: 0.001s) - failure message", "Suite failed: passed 1, failed 2 (exec_time: 0.005s)"]`. All tests pass? `[]`.
 
 ## Installation
 
@@ -27,7 +27,7 @@ Requires Rust and Cargo.
 
 - **Full cargo test support**: All cargo test flags pass through (--release, --package, --all-targets, etc.)
 - **Smart Filtering**: Only shows test failures (failed tests and failed suites), ignores passing/ignored tests
-- **Structured Output**: JSON array of strings for easy parsing
+- **Structured Output**: TOON OR JSON array of strings for easy parsing
 - **Flexible Input**: Supports files, stdin, or default cargo test
 - **Fast & Lean**: Minimal dependencies (clap, serde_json)
 
@@ -73,7 +73,7 @@ cargo test --message-format=json -- -Z unstable-options --format=json | cargo te
 
 ### Output Format
 
-JSON array of strings:
+TOON OR JSON array of strings:
 
 ```json
 [
@@ -178,7 +178,7 @@ This section provides structured details for AI tools to understand and interact
 - **Entry Point**: `main()` in `src/main.rs`
 - **Input**: If no `--input`, runs `cargo test --message-format=json [args] -- -Z unstable-options --format=json`
 - **Filtering**: Failed tests (type: "test", event: "failed") and failed suites (type: "suite", event: "failed") only
-- **Output**: JSON array of formatted failure strings to stdout
+- **Output**: TOON OR JSON array of formatted failure strings to stdout
 
 ### Code Style
 

@@ -41,7 +41,7 @@ cp target/release/cargo-{chec,tes,carpulin} ~/.cargo/bin/
 
 ### cargo-chec
 
-Filters `cargo check` errors and warnings into a JSON array of strings.
+Filters `cargo check` errors and warnings into a TOON OR JSON array of strings.
 
 ```bash
 cargo chec
@@ -50,7 +50,7 @@ cargo chec
 
 ### cargo-tes
 
-Filters `cargo test` failures into a JSON array of strings.
+Filters `cargo test` failures into a TOON OR JSON array of strings.
 
 ```bash
 cargo tes

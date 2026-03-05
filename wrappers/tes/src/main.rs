@@ -18,7 +18,7 @@ enum Cargo {
 #[command(version, about = "Filtered cargo test failures, as JSON")]
 #[command(
     long_about = "Runs `cargo test --message-format=json -- --format=json` and transforms the output into a \
-    simplified JSON array of test failure strings. Useful for CI/CD pipelines, editors, and AI tools.\n\n\
+    simplified TOON OR JSON array of test failure strings. Useful for CI/CD pipelines, editors, and AI tools.\n\n\
     All cargo test flags are supported and passed through (e.g. --release, --package, --all-targets).\n\n\
     Use --input to parse existing cargo test output instead of running cargo test."
 )]
@@ -45,18 +45,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (json_str, failure_status, stderr_lines) = match &args.input {
         Some(p) if p == "-" => {
-            eprintln!("⠿ Reading from stdin...");
             let mut s = String::new();
             io::stdin().read_to_string(&mut s)?;
             (s, None, Vec::new())
         }
-        Some(p) => {
-            eprintln!("⠿ Reading from file: {}", p);
-            (fs::read_to_string(p)?, None, Vec::new())
-        }
+        Some(p) => (fs::read_to_string(p)?, None, Vec::new()),
         None => {
-            eprintln!("⠿ Running cargo test...");
-            // Split args: cargo flags before '--', test flags after
             let (cargo_flags, test_flags): (Vec<_>, Vec<_>) =
                 args.cargo_args.iter().partition(|arg| {
                     !arg.starts_with("--nocapture") && !arg.starts_with("--show-output")

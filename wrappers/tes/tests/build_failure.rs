@@ -44,7 +44,7 @@ fn build_rs_failure_does_not_hang() {
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let parsed: Vec<String> =
-        serde_json::from_str(&stdout).expect("stdout should be valid JSON array");
+        serde_json::from_str(&stdout).expect("stdout should be valid TOON OR JSON array");
 
     // Should report the build failure exit code
     assert!(
